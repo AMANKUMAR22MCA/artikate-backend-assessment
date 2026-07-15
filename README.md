@@ -1,159 +1,43 @@
-﻿# artikate-backend-assessment
-# Artikate Backend Assessment
-### Python · Django · Systems Engineering
+# 🛠️ Artikate Backend Assessment
+
+> Python · Django · Redis · Celery · Systems Engineering
 
 ---
 
-## Setup Instructions
+## ⚡ Quick Start
 
-### Requirements
-- Python 3.10+
-- Redis (via Docker)
-- Git
-
----
-
-### 1. Clone the repo
-
+```bash
+# Clone
 git clone https://github.com/AMANKUMAR22MCA/artikate-backend-assessment.git
 cd artikate-backend-assessment
 
-### 2. Create virtual environment
-
+# Setup
 python -m venv venv
-
-# Mac/Linux:
-source venv/bin/activate
-
-# Windows:
-venv\Scripts\activate
-
-### 3. Install dependencies
-
+venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
-### 4. Start Redis via Docker
-
+# Start Redis
 docker run -d --name redis-assessment -p 6379:6379 redis
 
-### 5. Run migrations
-
+# Run
 python manage.py migrate
-
-### 6. Run the server
-
 python manage.py runserver
+```
 
 ---
 
-## Running Tests
+## 🧪 Run All Tests
 
-### Section 1 — N+1 Query Fix
-python manage.py test orders --verbosity=2
-
-### Section 2 — Job Queue
-python manage.py test emails --verbosity=2
-
-### Section 3 — Multi Tenant Isolation
-python manage.py test tenants --verbosity=2
-
-### Run all tests at once
+```bash
 python manage.py test --verbosity=2
+```
+
+| Section | Command | Result |
+|---|---|---|
+| Section 1 | `python manage.py test orders` | ✅ 3 tests |
+| Section 2 | `python manage.py test emails` | ✅ 3 tests |
+| Section 3 | `python manage.py test tenants` | ✅ 4 tests |
 
 ---
 
-## Section 1 — Profiler Evidence
-
-Seed the database first:
-
-python manage.py shell
-
-Then paste:
-
-from orders.models import Customer, Product, Order
-import random
-
-customers = [Customer.objects.create(name=f"Customer {i}", email=f"c{i}@test.com") for i in range(5)]
-products = [Product.objects.create(name=f"Product {i}", price=10.00 * (i+1)) for i in range(3)]
-for i in range(250):
-    Order.objects.create(
-        customer=random.choice(customers),
-        product=random.choice(products),
-        quantity=random.randint(1, 5),
-        status=random.choice(['pending', 'shipped', 'delivered']),
-    )
-
-Then visit:
-- Broken view: http://127.0.0.1:8000/api/orders/summary/broken/
-- Fixed view:  http://127.0.0.1:8000/api/orders/summary/
-- Silk dashboard: http://127.0.0.1:8000/silk/
-
-Broken: 501 queries, 4021ms
-Fixed:  1 query, 77ms
-
----
-
-## Section 2 — Running the Queue Live
-
-Open 2 terminals:
-
-Terminal 1 — Start Celery worker:
-celery -A artikate_project worker --loglevel=info -P solo
-
-Terminal 2 — Submit jobs:
-python manage.py shell
-
-Then paste:
-from emails.tasks import send_email_task
-
-for i in range(10):
-    send_email_task.apply_async(
-        args=[f"user{i}@test.com", "Order Confirmed", "Hello!"]
-    )
-
-print("10 jobs submitted!")
-
-Watch Terminal 1 for jobs being processed in real time.
-
----
-
-## Project Structure
-
-artikate-backend-assessment/
-├── artikate_project/         # Django project settings
-│   ├── settings.py
-│   ├── celery.py             # Celery configuration
-│   └── urls.py
-├── orders/                   # Section 1 - N+1 fix
-│   ├── models.py
-│   ├── views.py
-│   └── tests.py
-├── emails/                   # Section 2 - Job queue
-│   ├── tasks.py              # Celery tasks + rate limiter
-│   └── tests.py
-├── tenants/                  # Section 3 - Multi tenant
-│   ├── models.py             # TenantManager + thread locals
-│   ├── middleware.py         # Tenant extraction per request
-│   └── tests.py
-├── screenshots/              # Silk profiler evidence
-├── DESIGN.md                 # Section 2 architecture decisions
-├── ANSWERS.md                # Written answers all sections
-└── requirements.txt
-
----
-
-## Screenshots
-
-See /screenshots/ folder for:
-- silk_comparison.png  — query count before and after fix
-- celery_worker_live.png — worker processing jobs in real time
-
----
-
-## Written Answers
-
-All written answers are in ANSWERS.md covering:
-- Section 1 — Investigation log, root cause, fix explanation
-- Section 2 — SIGKILL answer, test results
-- Section 3 — Async failure modes, contextvars explanation
-- Section 4 — Django admin performance, pagination trade-offs
+## 📂 Project Structure
